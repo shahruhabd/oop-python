@@ -1,51 +1,73 @@
 class Bank:
-    def __init__(self, name, head_name, coef, money):
+    def __init__(self, name, head_name, coef):
         self.name = name
         self.head_name = head_name
         self.__coef = coef
-        self.money = None
 
-
-### не понял суть свойства coef
     @property
-    def get_coef(self):
+    def coef(self):
         return self.__coef
 
-    coef = property(get_coef)
+    @coef.setter
+    def coef(self, value):
+        if 0.0 <= value <= 100.0:
+            self.__coef = value
+        else:
+            raise ValueError("коеф нормальный надо")
 
-    def calculate(self, n=1):
-        return Client(self.money) * (n + self.__coef) ** n
+    def calculate(self, client, n):
+        money = client.money
+        money_after_n_years = money * (1 + self.coef) ** n
+        return money_after_n_years
 
 
-class Client(Bank):
-    def __init__(self, name, id, bank, money_after_year, head_name, coef):
-        super().__init__(name, head_name, coef)
+class Client:
+    def __init__(self, name, id, bank, money):
         self.name = name
         self.id = id
         self.bank = bank
-        self.__money = self.money
+        self.__money = money
         self.__money_after_year = None
 
     @property
     def money(self):
-        return f'Ваш баланс ${self.money}'
+        return self.__money
 
     @property
     def money_after_year(self):
-        return Bank.calculate(self, n=1)
+        if self.__money_after_year is None:
+            self.__money_after_year = self.bank.calculate(self, 1)
+        return self.__money_after_year
 
     def invest(self, amount):
-        if amount > 0:
-            return self.money + amount
+        if amount <= 0:
+            print("Amount должен быть положительным")
         else:
-            f'нельзя вводить отрицательное число'
+            self.__money += amount
 
     def take_money(self, amount):
-        if self.money > 0 and amount > 0:
-            return self.money - amount
+        if amount <= 0:
+            print("Amount должен быть положительным")
+        elif self.__money < amount:
+            print("нет денег")
         else:
-            f'нельзя вводить отрицательное число'
+            self.__money -= amount
 
 
-bank1 = Bank('Kaspi', 'Mikhail Lomtadze', 0.1, 1000)
-print(bank1.calculate())
+bank = Bank("Kaspi", "Lomtadze", 10)
+client = Client("Shakhrukh", "10", bank, 1500000)
+
+print(client.money)
+print(client.money_after_year)
+
+client.invest(320)
+print(client.money)
+print(client.money_after_year)
+
+client.take_money(2500)
+client.take_money(-500)
+print(client.money)
+print(client.money_after_year)
+
+bank.coef = 6
+print(client.money_after_year)
